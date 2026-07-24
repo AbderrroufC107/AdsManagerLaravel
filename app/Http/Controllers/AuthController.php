@@ -21,10 +21,14 @@ class AuthController extends Controller {
     public function login(Request $request) {
         $request->validate(['username' => 'required', 'password' => 'required']);
         $user = AuthService::login($request->username, $request->password);
-        if (!$user) return response()->json(['error' => 'Invalid credentials'], 401);
+        if (!$user) {
+            if ($request->expectsJson()) return response()->json(['error' => 'Invalid credentials'], 401);
+            return back()->withErrors(['username' => 'Invalid credentials']);
+        }
         Session::put('user_id', $user->id);
         Session::put('username', $user->username);
-        return response()->json(['success' => true, 'user' => ['id' => $user->id, 'username' => $user->username]]);
+        if ($request->expectsJson()) return response()->json(['success' => true, 'user' => ['id' => $user->id, 'username' => $user->username]]);
+        return redirect('/console');
     }
 
     public function logout() {
