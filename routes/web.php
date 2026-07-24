@@ -7,6 +7,7 @@ use App\Http\Controllers\ChatController;
 Route::get('/', fn() => redirect('/login'));
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
 Route::post('/auth/setup', [AuthController::class, 'setup']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::get('/logout', [AuthController::class, 'logout']);
