@@ -7,15 +7,17 @@ use Illuminate\Support\Facades\Session;
 
 class AuthController extends Controller {
     public function showLogin() {
-        if (AuthService::hasCredentials() && Session::has('user_id')) return redirect('/console');
+        if (Session::has('user_id')) return redirect('/profiles');
         return view('auth.login');
     }
 
     public function setup(Request $request) {
         $request->validate(['username' => 'required|min:3|max:50', 'password' => 'required|min:8']);
-        if (AuthService::hasCredentials()) return response()->json(['error' => 'User already exists. Login instead.'], 409);
+        if (Session::has('user_id')) return redirect('/profiles');
         $user = AuthService::createUser($request->username, $request->password);
-        return response()->json(['success' => true, 'message' => 'Account created. You can now login.', 'userId' => $user->id]);
+        Session::put('user_id', $user->id);
+        Session::put('username', $user->username);
+        return redirect('/profiles');
     }
 
     public function login(Request $request) {
@@ -27,8 +29,9 @@ class AuthController extends Controller {
         }
         Session::put('user_id', $user->id);
         Session::put('username', $user->username);
+        Session::forget('profile_id');
         if ($request->expectsJson()) return response()->json(['success' => true, 'user' => ['id' => $user->id, 'username' => $user->username]]);
-        return redirect('/console');
+        return redirect('/profiles');
     }
 
     public function logout() {
@@ -37,8 +40,8 @@ class AuthController extends Controller {
     }
 
     public function saveCredentials(Request $request) {
-        $request->validate(['meta_access_token' => 'required', 'meta_account_id' => 'required', 'anthropic_api_key' => 'required']);
-        $id = AuthService::saveCredentials($request->meta_access_token, $request->meta_account_id, $request->anthropic_api_key);
+        $request->validate(['meta_access_token' => 'required', 'anthropic_api_key' => 'required']);
+        $id = AuthService::saveCredentials($request->meta_access_token, $request->anthropic_api_key);
         return response()->json(['success' => true, 'message' => 'Credentials saved encrypted.', 'id' => $id]);
     }
 

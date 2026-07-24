@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\ProfileController;
 
 Route::get('/', fn() => redirect('/login'));
 
@@ -11,6 +12,12 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/auth/setup', [AuthController::class, 'setup']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::get('/logout', [AuthController::class, 'logout']);
+
+Route::get('/profiles', [ProfileController::class, 'index']);
+Route::get('/profiles/create', [ProfileController::class, 'create']);
+Route::post('/profiles', [ProfileController::class, 'store']);
+Route::post('/profiles/{id}/select', [ProfileController::class, 'select']);
+Route::delete('/profiles/{id}', [ProfileController::class, 'destroy']);
 
 Route::middleware('web')->group(function () {
     Route::get('/console', fn() => view('console'));

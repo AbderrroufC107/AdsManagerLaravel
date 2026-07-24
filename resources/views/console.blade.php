@@ -3,7 +3,7 @@
 <body class="min-h-screen flex flex-col">
 <header class="flex items-center justify-between border-b border-[#1e2a3a] px-4 py-2">
 <div class="flex items-center gap-3"><span class="text-sm font-bold text-white">META ADS</span><span id="acct-name" class="text-xs text-[#6a7a8a]"></span><span id="acct-status" class="text-[10px] px-1.5 py-0.5 rounded"></span><span id="acct-currency" class="text-[10px] text-[#6a7a8a]"></span></div>
-<div class="flex items-center gap-3"><button onclick="showCredentials()" class="text-xs text-[#6a7a8a] hover:text-white">Settings</button><a href="/logout" class="text-xs text-[#6a7a8a] hover:text-white">Logout</a></div>
+<div class="flex items-center gap-3"><a href="/profiles" class="text-xs text-blue-400 hover:text-blue-300">Switch Account</a><button onclick="showCredentials()" class="text-xs text-[#6a7a8a] hover:text-white">Settings</button><a href="/logout" class="text-xs text-[#6a7a8a] hover:text-white">Logout</a></div>
 </header>
 <div class="flex flex-1 overflow-hidden">
 <aside class="hidden w-60 flex-col border-r border-[#1e2a3a] bg-[#111720] p-3 md:flex">
@@ -31,7 +31,6 @@
 <h2 class="text-sm font-bold text-white mb-4">Setup Credentials</h2>
 <div class="space-y-3">
 <div><label class="block text-[10px] text-[#6a7a8a] mb-1">META ACCESS TOKEN</label><input type="password" id="cred-token" class="w-full rounded border border-[#1e2a3a] bg-[#0a0e14] px-3 py-2 text-xs text-white"></div>
-<div><label class="block text-[10px] text-[#6a7a8a] mb-1">META ACCOUNT ID</label><input type="text" id="cred-account" placeholder="act_123456" class="w-full rounded border border-[#1e2a3a] bg-[#0a0e14] px-3 py-2 text-xs text-white"></div>
 <div><label class="block text-[10px] text-[#6a7a8a] mb-1">ANTHROPIC API KEY</label><input type="password" id="cred-anthropic" class="w-full rounded border border-[#1e2a3a] bg-[#0a0e14] px-3 py-2 text-xs text-white"></div>
 </div>
 <div class="mt-4 flex gap-2">
@@ -50,7 +49,7 @@ async function fetchStatus(){try{const r=await fetch('/api/status');const d=awai
 function vitalRow(l,v){return`<div class="flex justify-between"><span class="text-[10px] text-[#6a7a8a]">${l}</span><span class="text-xs font-medium text-white">${v}</span></div>`}
 function showCredentials(){document.getElementById('cred-modal').classList.remove('hidden')}
 function hideCredentials(){document.getElementById('cred-modal').classList.add('hidden')}
-async function saveCredentials(){await fetch('/api/credentials',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content},body:JSON.stringify({meta_access_token:document.getElementById('cred-token').value,meta_account_id:document.getElementById('cred-account').value,anthropic_api_key:document.getElementById('cred-anthropic').value})});hideCredentials();fetchStatus()}
+async function saveCredentials(){await fetch('/api/credentials',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content},body:JSON.stringify({meta_access_token:document.getElementById('cred-token').value,anthropic_api_key:document.getElementById('cred-anthropic').value})});hideCredentials();fetchStatus()}
 function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 fetchStatus();setInterval(fetchStatus,30000);
 </script>

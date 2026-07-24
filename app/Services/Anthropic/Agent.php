@@ -14,11 +14,11 @@ class Agent {
     private string $apiKey;
     private string $baseUrl = 'https://api.anthropic.com';
 
-    public function __construct() {
-        $this->apiKey = env('ANTHROPIC_API_KEY', '');
+    public function __construct(string $apiKey = '') {
+        $this->apiKey = $apiKey ?: env('ANTHROPIC_API_KEY', '');
     }
 
-    public function run(string $conversationId, string $userMessage, Client $client, string $currency): array {
+    public function run(string $conversationId, string $userMessage, Client $client, string $currency, string $profileId = ''): array {
         Message::create(['conversation_id' => $conversationId, 'role' => 'user', 'content' => $userMessage]);
         $messages = Message::where('conversation_id', $conversationId)->orderBy('created_at')->get()->map(fn($m) => ['role' => $m->role, 'content' => $m->content])->toArray();
         $loopCount = 0;
@@ -39,7 +39,7 @@ class Agent {
                 $toolInput = $tool['input'];
                 if (ToolExecutor::getToolType($toolName) === 'write') {
                     $preview = ToolExecutor::buildPreview($toolName, $toolInput, $currency);
-                    $pending = PendingAction::create(['conversation_id' => $conversationId, 'tool_name' => $toolName, 'tool_input' => $toolInput, 'preview' => $preview, 'conversation_state' => $messages, 'expires_at' => now()->addMinutes(15)]);
+                    $pending = PendingAction::create(['conversation_id' => $conversationId, 'profile_id' => $profileId, 'tool_name' => $toolName, 'tool_input' => $toolInput, 'preview' => $preview, 'conversation_state' => $messages, 'expires_at' => now()->addMinutes(15)]);
                     return ['type' => 'write_pending', 'content' => $text ?? '', 'pending_action_id' => $pending->id, 'preview' => $preview, 'tool_name' => $toolName, 'tool_input' => $toolInput];
                 }
                 try {
@@ -71,7 +71,7 @@ class Agent {
         $response = $this->callClaude($state);
         $text = implode("\n", array_map(fn($b) => $b['text'] ?? '', array_filter($response['content'], fn($b) => $b['type'] === 'text')));
         Message::create(['conversation_id' => $action->conversation_id, 'role' => 'assistant', 'content' => $text ?: 'Action completed.']);
-        AuditLog::create(['pending_action_id' => $action->id, 'tool_name' => $action->tool_name, 'tool_input' => $action->tool_input, 'preview' => $action->preview, 'approved' => $approved, 'meta_response' => $result ?? null, 'error' => $approved ? null : 'Rejected by user']);
+        AuditLog::create(['pending_action_id' => $action->id, 'profile_id' => $action->profile_id, 'tool_name' => $action->tool_name, 'tool_input' => $action->tool_input, 'preview' => $action->preview, 'approved' => $approved, 'meta_response' => $result ?? null, 'error' => $approved ? null : 'Rejected by user']);
         return ['type' => 'complete', 'content' => $text ?: 'Action completed.'];
     }
 

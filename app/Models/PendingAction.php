@@ -7,8 +7,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PendingAction extends Model {
     use HasUuids;
-    protected $fillable = ['conversation_id', 'tool_name', 'tool_input', 'preview', 'conversation_state', 'status', 'expires_at', 'resolved_at'];
+    protected $fillable = ['conversation_id', 'profile_id', 'tool_name', 'tool_input', 'preview', 'conversation_state', 'status', 'expires_at', 'resolved_at'];
     protected $casts = ['tool_input' => 'array', 'conversation_state' => 'array', 'expires_at' => 'datetime', 'resolved_at' => 'datetime'];
     public function conversation(): BelongsTo { return $this->belongsTo(Conversation::class); }
+    public function profile(): BelongsTo { return $this->belongsTo(Profile::class); }
     public function isExpired(): bool { return $this->status !== 'pending' || $this->expires_at->isPast(); }
 }
