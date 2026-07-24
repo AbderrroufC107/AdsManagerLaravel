@@ -1,0 +1,28 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # إذا كنت تستخدم public_html كـ Document Root
+    # ويجب تحويل الطلبات إلى مجلد public
+    
+    RewriteCond %{REQUEST_URI} !^/adsmanager/public/
+    RewriteRule ^(.*)$ /adsmanager/public/$1 [L]
+</IfModule>
+
+# حماية ملفات敏感ة
+<Files .env>
+    Order allow,deny
+    Deny from all
+</Files>
+
+<FilesMatch "^composer\.(json|lock)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<Files artisan>
+    Order allow,deny
+    Deny from all
+</Files>
+
+# منع عرض المجلدات
+Options -Indexes
